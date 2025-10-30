@@ -1,0 +1,88 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-bitbucket-repo-with-techdocs
+  title: Bitbucket Repository with TechDocs
+  description: Creates a new Bitbucket Cloud repository with a basic TechDocs site.
+spec:
+  owner: user:default/guest
+  type: service
+
+  # These are the form fields the user will fill out
+  parameters:
+    - title: Component & Repository Details
+      required:
+        - component_id
+        - description
+        - workspace
+        - projectKey
+      properties:
+        component_id:
+          title: Component Name
+          type: string
+          description: A unique name for the component and the new repository slug (e.g., my-new-service).
+        description:
+          title: Description
+          type: string
+          description: A short description for the new repository.
+        workspace:
+          title: Bitbucket Workspace
+          type: string
+          description: Your Bitbucket Workspace ID (e.g., my-workspace).
+        projectKey:
+          title: Bitbucket Project Key
+          type: string
+          description: The "Key" of the Bitbucket Project to create this repo in (e.g., "PROJ").
+    - title: Catalog Owner
+      properties:
+        owner:
+          title: Owner
+          type: string
+          description: The Backstage entity that will own this component.
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [user, group]
+          default: 'user:default/guest' # Defaults to your admin guest user
+
+  # These are the actions the template will run
+  steps:
+    # 1. Fetch the skeleton files and replace variables
+    - id: fetch-skeleton
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          # Used by catalog-info.yaml
+          bbWorkspace: ${{ parameters.workspace }}
+          bbRepo: ${{ parameters.component_id }}
+
+    # 2. Create the repository in Bitbucket and push the files
+    - id: publish
+      name: Publish to Bitbucket
+      action: publish:bitbucketCloud
+      input:
+        description: ${{ parameters.description }}
+        # This special format tells the action to create a new repo
+        repoUrl: "bitbucket.org?workspace=${{ parameters.workspace }}&project=${{ parameters.projectKey }}&repo=${{ parameters.component_id }}"
+        defaultBranch: main
+        gitCommitMessage: "Initial commit by Red Hat Developer Hub"
+
+    # 3. Register the component in the catalog
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  # These are the links shown to the user on success
+  output:
+    links:
+      - title: View Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: View Component in Catalog
+        entityRef: ${{ steps.register.output.entityRef }}

@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id }}
+  description: ${{ values.description }}
+  annotations:
+    # This annotation tells Backstage where to find the source code
+    bitbucket.org/project-slug: ${{ values.bbWorkspace }}/${{ values.bbRepo }}
+    
+    # This annotation tells Backstage where to find the TechDocs
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner }}

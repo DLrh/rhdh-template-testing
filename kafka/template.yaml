@@ -1,0 +1,85 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-kafka-topic
+  title: Create Kafka Topic
+  description: Provisions a new Kafka Topic via GitOps
+  tags:
+    - kafka
+    - amq-streams
+spec:
+  owner: platform-team
+  type: service
+
+  parameters:
+    - title: Topic Details
+      required:
+        - topicName
+        - clusterName
+        - partitions
+        - replicas
+      properties:
+        topicName:
+          title: Topic Name
+          type: string
+          description: The name of the topic to create
+          ui:autofocus: true
+        clusterName:
+          title: Kafka Cluster Name
+          type: string
+          description: The name of the Kafka cluster to attach this topic to
+          default: my-cluster
+        namespace:
+          title: Namespace
+          type: string
+          description: The OpenShift project where the Kafka cluster lives
+          default: kafka-system
+        partitions:
+          title: Partitions
+          type: number
+          default: 3
+        replicas:
+          title: Replicas
+          type: number
+          default: 3
+
+    - title: GitOps Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+              - gitlab.com
+
+  steps:
+    - id: fetch-base
+      name: Render Manifests
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          topicName: ${{ parameters.topicName }}
+          namespace: ${{ parameters.namespace }}
+          clusterName: ${{ parameters.clusterName }}
+          partitions: ${{ parameters.partitions }}
+          replicas: ${{ parameters.replicas }}
+
+    - id: publish-pr
+      name: Create Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: create-topic-${{ parameters.topicName }}
+        title: "Create Kafka Topic: ${{ parameters.topicName }}"
+        description: "This PR creates a new Kafka Topic named ${{ parameters.topicName }}"
+        destinationPath: "gitops/topics/${{ parameters.topicName }}.yaml" 
+
+  output:
+    links:
+      - title: View Pull Request
+        url: ${{ steps['publish-pr'].output.remoteUrl }}

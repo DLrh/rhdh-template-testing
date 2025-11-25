@@ -6,7 +6,7 @@ metadata:
   description: Create a new Kafka topic and register it in Backstage
 spec:
   owner: devops
-  type: resource
+  type: service
 
   parameters:
     - title: Topic Information
@@ -20,6 +20,7 @@ spec:
           type: string
           title: Kafka Topic Name
           description: The name of the Kafka topic
+          minLength: 1
         partitions:
           type: number
           title: Number of Partitions
@@ -41,10 +42,10 @@ spec:
         url: ./skeleton
 
     - id: publish
-      name: Publish to Repo
+      name: Publish to GitHub
       action: publish:github
       input:
-        repoUrl: github.com?owner=DLrh&repo=kafkatopic2
+        repoUrl: github.com?owner=DLrh&repo=${{ values.topic_name | lower | replace(" ", "-") }}-kafka
         defaultBranch: main
         description: "Kafka topic resources for ${{ values.topic_name }}"
 
@@ -59,3 +60,5 @@ spec:
     links:
       - title: View Component in Backstage
         url: ${{ steps.register.output.entityRef }}
+      - title: View GitHub Repo
+        url: ${{ steps.publish.output.remoteUrl }}

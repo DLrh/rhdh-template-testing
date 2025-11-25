@@ -1,85 +1,76 @@
-apiVersion: scaffolder.backstage.io/v1beta3
+apiVersion: backstage.io/v1alpha1
 kind: Template
 metadata:
   name: create-kafka-topic
-  title: Create Kafka Topic
-  description: Provisions a new Kafka Topic via GitOps
+  title: Create New Kafka Topic
+  description: Creates a new Kafka topic and registers it as a Resource entity.
   tags:
     - kafka
-    - amq-streams
+    - topic
+    - resource
 spec:
-  owner: platform-team
+  owner: user:default/guest # Set a sensible default owner
   type: service
-
+  
   parameters:
-    - title: Topic Details
+    - title: Provide Component Information
       required:
-        - topicName
-        - clusterName
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Topic Resource ID
+          type: string
+          description: Unique, short ID for the new topic resource (e.g., 'payment-topic-dev')
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+          description: Owner of the new topic resource
+          
+    - title: Provide Kafka Topic Details
+      required:
+        - kafkaTopicName
         - partitions
-        - replicas
       properties:
-        topicName:
-          title: Topic Name
+        kafkaTopicName:
+          title: Kafka Topic Name
           type: string
-          description: The name of the topic to create
-          ui:autofocus: true
-        clusterName:
-          title: Kafka Cluster Name
-          type: string
-          description: The name of the Kafka cluster to attach this topic to
-          default: my-cluster
-        namespace:
-          title: Namespace
-          type: string
-          description: The OpenShift project where the Kafka cluster lives
-          default: kafka-system
+          description: The exact topic name to be created on the broker (e.g., 'com.aoins.payments')
         partitions:
-          title: Partitions
+          title: Partition Count
           type: number
           default: 3
-        replicas:
-          title: Replicas
-          type: number
-          default: 3
-
-    - title: GitOps Repository
-      required:
-        - repoUrl
-      properties:
-        repoUrl:
-          title: Repository Location
-          type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
-              - gitlab.com
-
+          description: Number of partitions for the topic
+          
   steps:
-    - id: fetch-base
-      name: Render Manifests
+    # 1. FETCH AND RENDER: Fetches the skeleton, rendering the component-info.yaml
+    - id: fetch-template
+      name: Fetching Template Files
       action: fetch:template
       input:
-        url: ./skeleton
-        values:
-          topicName: ${{ parameters.topicName }}
-          namespace: ${{ parameters.namespace }}
-          clusterName: ${{ parameters.clusterName }}
-          partitions: ${{ parameters.partitions }}
-          replicas: ${{ parameters.replicas }}
+        url: ./skeleton # Assumes your skeleton is in a subfolder named 'skeleton'
 
-    - id: publish-pr
-      name: Create Pull Request
-      action: publish:github:pull-request
+    # 2. CREATE TOPIC: Executes the Kafka Scaffolder action
+    - id: create-topic
+      name: Creating Kafka Topic on Broker
+      action: kafka:create-topic 
       input:
-        repoUrl: ${{ parameters.repoUrl }}
-        branchName: create-topic-${{ parameters.topicName }}
-        title: "Create Kafka Topic: ${{ parameters.topicName }}"
-        description: "This PR creates a new Kafka Topic named ${{ parameters.topicName }}"
-        destinationPath: "gitops/topics/${{ parameters.topicName }}.yaml" 
-
+        topic: ${{ values.kafkaTopicName }}
+        partitions: ${{ values.partitions }}
+        # NOTE: If you need to specify a broker, add the input here:
+        # broker: my-kafka-broker 
+        
+    # 3. REGISTER ENTITY: Registers the component-info.yaml which is now fully rendered
+    - id: register-component
+      name: Registering Topic Resource in Catalog
+      action: catalog:register
+      input:
+        # This registers the file that was rendered in the 'fetch-template' step
+        url: ./component-info.yaml 
+        
   output:
     links:
-      - title: View Pull Request
-        url: ${{ steps['publish-pr'].output.remoteUrl }}
+      - title: Catalog Entity
+        icon: catalog
+        entityRef: "resource:default/${{ values.component_id }}"

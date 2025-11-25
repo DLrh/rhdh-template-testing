@@ -1,17 +1,15 @@
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  # This field will be correctly substituted by the Scaffolder:
-  name: ${{ values.component_id }} 
+  name: ${{ values.component_id }}
   description: Kafka Topic ${{ values.kafkaTopicName }}
   tags:
     - kafka
     - topic
   annotations:
-    # Add a useful annotation linking the resource ID to the actual topic name
     'kafka.apache.org/topic-name': ${{ values.kafkaTopicName }}
     'backstage.io/managed-by-location': 'template:create-kafka-topic'
 spec:
   type: kafka-topic
   owner: ${{ values.owner }}
-  system: default # Optional: Link to a System entity
+  system: default

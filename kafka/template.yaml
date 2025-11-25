@@ -87,32 +87,6 @@ spec:
   output:
     links:
       - title: Catalog
-          
-  steps:
-    # 1. FETCH AND RENDER: Fetches the skeleton, rendering the component-info.yaml
-    - id: fetch-template
-      name: Fetching Template Files
-      action: fetch:template
-      input:
-        url: ./skeleton # Assumes your skeleton is in a subfolder named 'skeleton'
-
-    # 2. CREATE TOPIC: Executes the Kafka Scaffolder action
-    - id: create-topic
-      name: Creating Kafka Topic on Broker
-      action: kafka:create-topic 
-      input:
-        topic: ${{ values.kafkaTopicName }}
-        partitions: ${{ values.partitions }}
-        # NOTE: If you need to specify a broker, add the input here:
-        # broker: my-kafka-broker 
-        
-    # 3. REGISTER ENTITY: Registers the component-info.yaml which is now fully rendered
-    - id: register-component
-      name: Registering Topic Resource in Catalog
-      action: catalog:register
-      input:
-        # This registers the file that was rendered in the 'fetch-template' step
-        url: ./component-info.yaml 
         
   output:
     links:

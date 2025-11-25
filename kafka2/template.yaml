@@ -1,12 +1,12 @@
 apiVersion: scaffolder.backstage.io/v1beta3
-kind: Template
+kind: Component
 metadata:
   name: kafka-topic-template
   title: Kafka Topic Creator
   description: Create a new Kafka topic and register it in Backstage
 spec:
   owner: devops
-  type: service
+  type: resource
 
   parameters:
     - title: Topic Information
@@ -52,7 +52,7 @@ spec:
       name: Register in Backstage
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}?ref=main
         catalogInfoPath: catalog-info.yaml
 
   output:

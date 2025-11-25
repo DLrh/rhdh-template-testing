@@ -40,7 +40,11 @@ spec:
       action: fetch:template
       input:
         url: ./skeleton
-
+    - id: debug
+      name: Debug Topic Name
+      action: log:write
+      input:
+        message: "Topic name is '${{ values.topic_name }}'"
     - id: publish
       name: Publish to GitHub
       action: publish:github
@@ -55,11 +59,7 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}?ref=main
         catalogInfoPath: catalog-info.yaml
-    - id: debug
-      name: Debug Topic Name
-      action: log:write
-      input:
-        message: "Topic name is '${{ values.topic_name }}'"
+
 
   output:
     links:

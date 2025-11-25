@@ -56,9 +56,6 @@ spec:
           description: Number of partitions for the topic
           
   steps:
-    # 1. FETCH AND RENDER (FIXES THE INPUT ERROR)
-    # This step pulls the skeleton files (including component-info.yaml)
-    # and substitutes all ${{ values.variable }} expressions with the user's input.
     - id: fetch-template
       name: Fetching Template Files and Rendering
       action: fetch:template
@@ -76,8 +73,6 @@ spec:
         # broker: # Add broker config here if not using a global default
 
     # 3. REGISTER ENTITY
-    # Registers the component-info.yaml file, which is now fully rendered
-    # and has a valid metadata.name string.
     - id: register-component
       name: Registering Topic Resource in Catalog
       action: catalog:register

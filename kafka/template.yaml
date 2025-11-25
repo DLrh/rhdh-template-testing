@@ -8,8 +8,19 @@ metadata:
     - kafka
     - topic
     - resource
+apiVersion: backstage.io/v1alpha1
+kind: Template
+metadata:
+  name: create-kafka-topic
+  title: Create New Kafka Topic
+  description: Creates a new Kafka topic resource on the broker and registers it in the Catalog.
+  tags:
+    - kafka
+    - topic
+    - resource
+    - infrastructure
 spec:
-  owner: user:default/guest # Set a sensible default owner
+  owner: group:default/engineering
   type: service
   
   parameters:
@@ -21,12 +32,13 @@ spec:
         component_id:
           title: Topic Resource ID
           type: string
-          description: Unique, short ID for the new topic resource (e.g., 'payment-topic-dev')
+          description: Unique, short ID for the new topic resource (e.g., 'payment-topic-dev'). MUST be lowercase letters, numbers, and hyphens.
+          ui:autofocus: true
         owner:
           title: Owner
           type: string
           ui:field: OwnerPicker
-          description: Owner of the new topic resource
+          description: Owner of the new topic resource.
           
     - title: Provide Kafka Topic Details
       required:
@@ -42,6 +54,39 @@ spec:
           type: number
           default: 3
           description: Number of partitions for the topic
+          
+  steps:
+    # 1. FETCH AND RENDER (FIXES THE INPUT ERROR)
+    # This step pulls the skeleton files (including component-info.yaml)
+    # and substitutes all ${{ values.variable }} expressions with the user's input.
+    - id: fetch-template
+      name: Fetching Template Files and Rendering
+      action: fetch:template
+      input:
+        url: ./skeleton # Assumes your catalog entity file is in a folder named 'skeleton'
+
+    # 2. CREATE TOPIC
+    # Executes the actual action on the Kafka broker.
+    - id: create-topic
+      name: Creating Kafka Topic on Broker
+      action: kafka:create-topic 
+      input:
+        topic: ${{ values.kafkaTopicName }}
+        partitions: ${{ values.partitions }}
+        # broker: # Add broker config here if not using a global default
+
+    # 3. REGISTER ENTITY
+    # Registers the component-info.yaml file, which is now fully rendered
+    # and has a valid metadata.name string.
+    - id: register-component
+      name: Registering Topic Resource in Catalog
+      action: catalog:register
+      input:
+        url: ./component-info.yaml 
+        
+  output:
+    links:
+      - title: Catalog
           
   steps:
     # 1. FETCH AND RENDER: Fetches the skeleton, rendering the component-info.yaml

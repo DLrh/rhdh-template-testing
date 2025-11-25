@@ -3,6 +3,7 @@ kind: Component
 metadata:
   name: ${{ values.topic_name | lower | replace(" ", "-") }}
   description: Kafka topic for ${{ values.topic_name }}
+  annotations: {}
 spec:
   type: resource
   lifecycle: production

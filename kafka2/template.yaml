@@ -17,10 +17,10 @@ spec:
         - owner
       properties:
         topic_name:
-        type: string
-        title: Kafka Topic Name
-        description: The name of the Kafka topic
-        minLength: 1
+          type: string
+          title: Kafka Topic Name
+          description: The name of the Kafka topic
+          minLength: 1
         partitions:
           type: number
           title: Number of Partitions

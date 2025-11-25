@@ -4,7 +4,7 @@ metadata:
   name: ${{ values.component_id }}
   description: ${{ values.description }}
   annotations:
-    github.com/project-slug: ${{values.destination.owner + "/" + values.destination.repo}}
+    bitbucket.org/project-slug: ${{ values.bbWorkspace }}/${{ values.bbRepo }}
     backstage.io/techdocs-ref: dir:.
 spec:
   type: Component

@@ -44,7 +44,7 @@ spec:
       name: Publish to Repo
       action: publish:github
       input:
-        repoUrl: github.com?owner=DLrh&repo=kafkatopic1
+        repoUrl: github.com?owner=DLrh&repo=kafkatopic2
         defaultBranch: main
         description: "Kafka topic resources for ${{ values.topic_name }}"
 

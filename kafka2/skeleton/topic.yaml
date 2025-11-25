@@ -1,0 +1,11 @@
+apiVersion: kafka.apache.org/v1alpha1
+kind: KafkaTopic
+metadata:
+  name: ${{ values.topic_name | lower | replace(" ", "-") }}
+  labels:
+    backstage.io/kafka-topic: "true"
+spec:
+  partitions: ${{ values.partitions }}
+  replicationFactor: ${{ values.replication_factor }}
+  config:
+    retention.ms: 604800000  # 7 days

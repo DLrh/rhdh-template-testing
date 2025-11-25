@@ -1,0 +1,61 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: kafka-topic-template
+  title: Kafka Topic Creator
+  description: Create a new Kafka topic and register it in Backstage
+spec:
+  owner: devops
+  type: service
+
+  parameters:
+    - title: Topic Information
+      required:
+        - topic_name
+        - partitions
+        - replication_factor
+        - owner
+      properties:
+        topic_name:
+          type: string
+          title: Kafka Topic Name
+          description: The name of the Kafka topic
+        partitions:
+          type: number
+          title: Number of Partitions
+          default: 3
+        replication_factor:
+          type: number
+          title: Replication Factor
+          default: 1
+        owner:
+          type: string
+          title: Owner
+          description: Owner of the Kafka topic (team or group)
+
+  steps:
+    - id: fetch-template
+      name: Fetch Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+
+    - id: publish
+      name: Publish to Repo
+      action: publish:github
+      input:
+        repoUrl: github.com?owner=my-org&repo=${{ values.topic_name }}
+        defaultBranch: main
+        description: "Kafka topic resources for ${{ values.topic_name }}"
+
+    - id: register
+      name: Register in Backstage
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: catalog-info.yaml
+
+  output:
+    links:
+      - title: View Component in Backstage
+        url: ${{ steps.register.output.entityRef }}

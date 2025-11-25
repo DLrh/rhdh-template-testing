@@ -82,7 +82,7 @@ spec:
       name: Registering Topic Resource in Catalog
       action: catalog:register
       input:
-        url: ./component-info.yaml 
+        url: ./catalog-info.yaml 
         
   output:
     links:

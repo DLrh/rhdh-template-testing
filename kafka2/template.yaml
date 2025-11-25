@@ -55,6 +55,11 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}?ref=main
         catalogInfoPath: catalog-info.yaml
+    - id: debug
+      name: Debug Topic Name
+      action: log:write
+      input:
+        message: "Topic name is '${{ values.topic_name }}'"
 
   output:
     links:

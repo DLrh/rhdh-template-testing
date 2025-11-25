@@ -1,9 +1,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: kafka-topic-template
+  name: ${{ values.topic_name | default("default-topic") | lower | replace(" ", "-") }}
   title: Kafka Topic Creator
-  description: Create a new Kafka topic and register it in Backstage
+  description: Create a new Kafka topic and push to github
 spec:
   owner: devops
   type: service
@@ -40,16 +40,11 @@ spec:
       action: fetch:template
       input:
         url: ./skeleton
-    - id: debug
-      name: Debug Topic Name
-      action: log:write
-      input:
-        message: "Topic name is '${{ values.topic_name }}'"
     - id: publish
       name: Publish to GitHub
       action: publish:github
       input:
-        repoUrl: github.com?owner=DLrh&repo=${{ values.topic_name | lower | replace(" ", "-") }}-kafka
+        repoUrl: github.com?owner=DLrh&repo=${{ values.topic_name | default("default-topic") | lower | replace(" ", "-") }}-kafka
         defaultBranch: main
         description: "Kafka topic resources for ${{ values.topic_name }}"
 

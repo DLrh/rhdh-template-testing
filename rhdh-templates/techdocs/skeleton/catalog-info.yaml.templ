@@ -1,15 +1,17 @@
 apiVersion: backstage.io/v1alpha1
-kind: Component
+kind: Resource
 metadata:
-  name: ${{ values.component_id }}
-  description: ${{ values.description }}
+  # This field will be correctly substituted by the Scaffolder:
+  name: ${{ values.component_id }} 
+  description: Kafka Topic ${{ values.kafkaTopicName }}
+  tags:
+    - kafka
+    - topic
   annotations:
-    # This annotation tells Backstage where to find the source code
-    bitbucket.org/project-slug: ${{ values.bbWorkspace }}/${{ values.bbRepo }}
-    
-    # This annotation tells Backstage where to find the TechDocs
-    backstage.io/techdocs-ref: dir:.
+    # Add a useful annotation linking the resource ID to the actual topic name
+    'kafka.apache.org/topic-name': ${{ values.kafkaTopicName }}
+    'backstage.io/managed-by-location': 'template:create-kafka-topic'
 spec:
-  type: service
-  lifecycle: experimental
+  type: kafka-topic
   owner: ${{ values.owner }}
+  system: default # Optional: Link to a System entity

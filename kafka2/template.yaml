@@ -1,5 +1,5 @@
 apiVersion: scaffolder.backstage.io/v1beta3
-kind: Component
+kind: Template
 metadata:
   name: kafka-topic-template
   title: Kafka Topic Creator
